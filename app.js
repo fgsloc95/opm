@@ -53,37 +53,84 @@ function startApp(user) {
 // ==========================
 async function loadData() {
   try {
+
+    const cached = localStorage.getItem("opm_cache");
+    if (cached) {renderTree(JSON.parse(cached));}
     const res = await fetch(API_URL);
+    localStorage.setItem("opm_cache", JSON.stringify(data));
     const data = await res.json();
 
-    console.log("[OPM] dados carregados:", data);
+    window.OPM_DATA = data;
 
-    renderData(data);
+    renderTree(data);
 
   } catch (err) {
-    console.error("Erro ao carregar dados", err);
+    console.error(err);
   }
 }
 
+
 // ==========================
-// DEBUG SIMPLES
+// RENDER ARVORE
 // ==========================
-function renderData(data) {
+function renderTree(data) {
   const main = document.querySelector("main");
-  main.innerHTML = "<h1>Dados do OPM</h1>";
+  main.innerHTML = "<h1>OPM Tree</h1>";
 
-  data.forEach(item => {
-    const div = document.createElement("div");
+  const tree = buildTree(data);
 
-    div.innerText = `${item.id} - ${item.title} (${item.status})`;
-
-    div.onclick = () => {
-      item.title = prompt("Novo título:", item.title) || item.title;
-      saveItem(item);
-    };
-
-    main.appendChild(div);
+  tree.forEach(node => {
+    renderNode(node, main, 0);
   });
+}
+// RENDER NÓ
+function renderNode(node, container, level) {
+  const div = document.createElement("div");
+
+  div.style.marginLeft = level * 20 + "px";
+  div.style.padding = "4px";
+
+  div.innerText = `${node.id} - ${node.title} (${node.status})`;
+
+  // CLICK → EDIT
+  div.onclick = (e) => {
+    e.stopPropagation();
+
+    node.title = prompt("Novo título:", node.title) || node.title;
+    saveItem(node);
+  };
+
+  // DOUBLE CLICK → ADD CHILD
+  div.ondblclick = (e) => {
+    e.stopPropagation();
+
+    createChild(node);
+  };
+
+  container.appendChild(div);
+
+  if (node.children) {
+    node.children.forEach(child => {
+      renderNode(child, container, level + 1);
+    });
+  }
+}
+// CRIAR FILHO
+function createChild(parent) {
+  const data = window.OPM_DATA;
+
+  const newItem = {
+    id: generateHierarchicalId(parent.id, data),
+    parentId: parent.id,
+    level: parent.level + 1,
+    title: "Nova Subtask",
+    description: "",
+    status: "idea",
+    type: "feature",
+    tags: parent.tags || "",
+  };
+
+  saveItem(newItem);
 }
 
 
@@ -128,8 +175,48 @@ function createTestItem() {
   saveItem(item);
 }
 // ==========================
-// GERADOR DE ID
+// GERADOR DE ID DE HIERARQUIA
 // ==========================
-function generateId() {
-  return Date.now().toString();
+function generateHierarchicalId(parentId, data) {
+  if (!parentId) {
+    // nível 1
+    const level1 = data.filter(i => i.level == 1);
+    return (level1.length + 1).toString();
+  }
+
+  const children = data.filter(i => i.parentId == parentId);
+
+  if (children.length === 0) {
+    return parentId + ".1";
+  }
+
+  const lastChild = children[children.length - 1];
+  const parts = lastChild.id.split(".");
+  const lastNumber = parseInt(parts[parts.length - 1]);
+
+  parts[parts.length - 1] = lastNumber + 1;
+
+  return parts.join(".");
+}
+// ==========================
+// GERAR ARVORE
+// ==========================
+function buildTree(data) {
+  const map = {};
+  const roots = [];
+
+  data.forEach(item => {
+    item.children = [];
+    map[item.id] = item;
+  });
+
+  data.forEach(item => {
+    if (item.parentId && map[item.parentId]) {
+      map[item.parentId].children.push(item);
+    } else {
+      roots.push(item);
+    }
+  });
+
+  return roots;
 }
