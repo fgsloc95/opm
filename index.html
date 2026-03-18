@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>OPM v3.2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="center-box">
+    <h2>OTG Project Master</h2>
+
+    <select id="userSelect">
+      <option value="">Selecione um usuário</option>
+      <option value="Felipe">Felipe</option>
+      <option value="Dev2">Dev2</option>
+    </select>
+
+    <button id="loginBtn">Accept</button>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header>
+      <span id="activeUser"></span>
+    </header>
+
+    <main>
+      <h1>OPM carregado 🚀</h1>
+      <p>Base pronta para integração com Sheets</p>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

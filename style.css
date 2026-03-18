@@ -1,0 +1,48 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #121212;
+  color: #fff;
+}
+
+/* Central box */
+.center-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1e1e1e;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Inputs */
+select, button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 200px;
+  border: none;
+  border-radius: 5px;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+/* Hidden */
+.hidden {
+  display: none;
+}
+
+/* Header */
+header {
+  background: #1e1e1e;
+  padding: 10px;
+}
