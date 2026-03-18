@@ -70,12 +70,66 @@ async function loadData() {
 // ==========================
 function renderData(data) {
   const main = document.querySelector("main");
-
   main.innerHTML = "<h1>Dados do OPM</h1>";
 
   data.forEach(item => {
     const div = document.createElement("div");
+
     div.innerText = `${item.id} - ${item.title} (${item.status})`;
+
+    div.onclick = () => {
+      item.title = prompt("Novo título:", item.title) || item.title;
+      saveItem(item);
+    };
+
     main.appendChild(div);
   });
+}
+
+
+// ==========================
+// SALVAR DADOS
+// ==========================
+async function saveItem(item) {
+  try {
+    item.lastUpdate = Date.now();
+    item.lastEditor = localStorage.getItem("opm_user");
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ data: item }),
+    });
+
+    const result = await res.json();
+
+    console.log("[OPM] salvo:", result);
+
+    loadData(); // recarrega
+
+  } catch (err) {
+    console.error("Erro ao salvar", err);
+  }
+}
+// ==========================
+// CRIAR ITEM TESTE
+// ==========================
+function createTestItem() {
+  const item = {
+    id: generateId(),
+    parentId: "",
+    level: 1,
+    title: "Nova Task",
+    description: "Criada via UI",
+    status: "idea",
+    type: "feature",
+    tags: "test",
+  };
+
+  saveItem(item);
+}
+// ==========================
+// GERADOR DE ID
+// ==========================
+function generateId() {
+  return Date.now().toString();
 }
