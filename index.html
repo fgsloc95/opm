@@ -27,10 +27,73 @@
     </header>
 
     <main>
-      <h1>OPM carregado 🚀</h1>
-      <p>Base pronta para integração com Sheets</p>
-      <button onclick="createTestItem()">Criar Task Teste</button>
+
+      <div id="tabs">
+        <button onclick="setView('tree')">Full</button>
+        <button onclick="setView('impact')">Impact</button>
+        <button onclick="setView('clean')">Clean</button>
+        <button onclick="setView('kanban')">Kanban</button>
+        <button onclick="setView('log')">Log</button>
+      </div>
+
+      <div id="topActions">
+        <button onclick="toggleFocus()">Focus Mode</button>
+        <button onclick="createTestItem()">Criar Task Teste</button>
+        <button onclick="createRootTask()">+ Nova Chave</button>
+        <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)"> 
+        <input placeholder="Filtrar por tag..." oninput="setKanbanFilter(this.value)">
+      </div>
+
     </main>
+
+    <div id="editorPanel" class="editor hidden">
+    <h2>Editar Task</h2>
+
+    <label>Título</label>
+    <input id="editTitle">
+
+    <label>Descrição</label>
+    <textarea id="editDescription"></textarea>
+
+    <label>Status</label>
+    <select id="editStatus">
+        <option value="idea">Idea</option>
+        <option value="to do">To Do</option>
+        <option value="doing">Doing</option>
+        <option value="done">Done</option>
+    </select>
+
+    <label>Tipo</label>
+    <select id="editType">
+        <option value="feature">Feature</option>
+        <option value="bug">Bug</option>
+        <option value="refactor">Refactor</option>
+        <option value="research">Research</option>
+    </select>
+
+    <label>Tags</label>
+    <input id="editTags">
+
+    <hr>
+
+    <h3>Asset Manifest</h3>
+
+    <label>Server Source</label>
+    <textarea id="editServerSource"></textarea>
+
+    <label>Server Lua</label>
+    <textarea id="editServerLua"></textarea>
+
+    <label>Client Source</label>
+    <textarea id="editClientSource"></textarea>
+
+    <label>Client Lua</label>
+    <textarea id="editClientLua"></textarea>
+
+    <button onclick="saveEditor()">Salvar</button>
+    <button onclick="closeEditor()">Cancelar</button>
+    </div>
+
   </div>
 
   <script src="app.js"></script>
