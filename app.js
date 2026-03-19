@@ -16,6 +16,7 @@ let focusMode = false;
 let currentView = "tree";
 let currentEditingItem = null;
 let kanbanFilterTag = null;
+let lastDataHash = "";
 
 // ==========================
 // INIT
@@ -63,29 +64,24 @@ function startApp(user) {
 }
 
 // ==========================
-// CARREGAR DADOS
+// RENDERIZAÇÃO INTELIGENTE
 // ==========================
 async function loadData() {
   try {
-
-    // CACHE PRIMEIRO
-    const cached = localStorage.getItem("opm_cache");
-    if (cached) {
-      renderTree(JSON.parse(cached));
-    }
-
     const res = await fetch(API_URL);
     const data = await res.json();
-
-    // SALVA CACHE (AGORA CORRETO)
-    localStorage.setItem("opm_cache", JSON.stringify(data));
-
+    
+    // Verifica se houve mudança real
+    const currentHash = JSON.stringify(data);
+    if (currentHash === lastDataHash) return; 
+    
+    lastDataHash = currentHash;
+    localStorage.setItem("opm_cache", currentHash);
     window.OPM_DATA = data;
-
+    
     renderCurrentView();
-
   } catch (err) {
-    console.error(err);
+    console.error("Fetch Error:", err);
   }
 }
 
@@ -223,23 +219,18 @@ function createTestItem() {
 // ==========================
 function generateHierarchicalId(parentId, data) {
   if (!parentId) {
-    // nível 1
-    const level1 = data.filter(i => i.level == 1);
+    const level1 = data.filter(i => i.level == 1 || i.level == "1");
     return (level1.length + 1).toString();
   }
 
   const children = data.filter(i => i.parentId == parentId);
+  if (children.length === 0) return parentId + ".1";
 
-  if (children.length === 0) {
-    return parentId + ".1";
-  }
-
+  // Pega o último número do último filho e soma 1
   const lastChild = children[children.length - 1];
   const parts = lastChild.id.split(".");
-  const lastNumber = parseInt(parts[parts.length - 1]);
-
-  parts[parts.length - 1] = lastNumber + 1;
-
+  const lastNum = parseInt(parts[parts.length - 1]);
+  parts[parts.length - 1] = lastNum + 1;
   return parts.join(".");
 }
 // ==========================
@@ -404,102 +395,118 @@ function renderCleanView(data) {
 // ==========================
 function renderTree(data) {
   const main = document.querySelector("main");
-  main.innerHTML = "<h1>OPM Tree</h1>";
+  main.innerHTML = `<h1 class="view-title">OPM Tree View</h1>`;
 
   const tree = buildTree(data);
+  const container = document.createElement("div");
+  container.className = "tree-container";
 
   tree.forEach(node => {
-    renderNode(node, main, 0);
+    renderNode(node, container, 0);
   });
+
+  main.appendChild(container);
 }
-// RENDER NÓ
+
+// ==========================
+// RENDER NÓ (REFINADO v3.3)
+// ==========================
 function renderNode(node, container, level) {
-  if (focusMode && node.status === "done") {
-    return;
-  }    
-  const div = document.createElement("div");
+  // 1. Filtro de Focus Mode
+  if (focusMode && node.status === "done") return;
 
+  // 2. Criação do Elemento Principal
+  const row = document.createElement("div");
+  row.className = `node-row level-${node.level}`;
+  row.style.marginLeft = `${level * 25}px`; // Indentação maior para legibilidade
+
+  // 3. Lógica de Barra de Progresso (Apenas Nível 1 - A COISA)
+  let progressHtml = "";
   if (node.level == 1) {
-  const progress = calculateProgress(node);
+    const progress = calculateProgress(node);
+    progressHtml = `
+      <div class="progress-wrapper">
+        <div class="progress-bar" style="width: ${progress}%"></div>
+      </div>`;
+  }
 
-  const bar = document.createElement("div");
-  bar.style.height = "6px";
-  bar.style.background = "#333";
-  bar.style.marginTop = "4px";
-
-  const fill = document.createElement("div");
-  fill.style.width = progress + "%";
-  fill.style.height = "100%";
-  fill.style.background = "#4CAF50";
-
-  bar.appendChild(fill);
-  div.appendChild(bar);
-}
-
-
-  div.style.marginLeft = level * 20 + "px";
-  div.style.padding = "4px";
-
+  // 4. Tags Herdadas para Visualização
   const tags = getInheritedTags(node, window.OPM_MAP);
+  const tagsHtml = tags.map(t => `<span class="tag-pill">${t}</span>`).join("");
 
-  div.innerText = `${node.id} - ${node.title} (${node.status}) [${tags.join(", ")}]`;
+  // 5. Montagem do Conteúdo Interno
+  row.innerHTML = `
+    ${progressHtml}
+    <div class="node-content">
+      <div class="node-info">
+        <span class="node-id">${node.id}</span>
+        <span class="node-title">${node.title}</span>
+      </div>
+      <div class="node-meta">
+        ${tagsHtml}
+        <span class="status-badge status-${node.status.replace(/\s+/g, '-')}">${node.status}</span>
+        <span class="type-badge type-${node.type}">${node.type}</span>
+      </div>
+    </div>
+  `;
 
-  // CLICK → EDIT (TITLE + TAGS)
-  div.onclick = (e) => {
+  // 6. EVENTO: Click simples abre o Editor Lateral
+  row.onclick = (e) => {
     e.stopPropagation();
-
-    div.onclick = (e) => {
-      e.stopPropagation();
-      openEditor(node);
-    };
-
-    node.title = newTitle || node.title;
-    node.tags = newTags || node.tags;
-
-    saveItem(node);
+    openEditor(node); 
   };
 
-  // DOUBLE CLICK → ADD CHILD
-  div.ondblclick = (e) => {
+  // 7. EVENTO: Double Click cria Filho (se não for Nível 4)
+  row.ondblclick = (e) => {
     e.stopPropagation();
-    createChild(node);
+    if (node.level < 4) {
+      createChild(node);
+    } else {
+      console.warn("Limite de hierarquia atingido (Nível 4)");
+    }
   };
 
-  // abrir manisfest e item history
-  div.oncontextmenu = (e) => {
-   e.preventDefault();
-
-   const option = prompt("1: Manifest | 2: History");
-
-   if (option == "1") openManifestEditor(node);
-   if (option == "2") showItemHistory(node.id);
+  // 8. EVENTO: Botão Direito (Context Menu) para opções extras
+  row.oncontextmenu = (e) => {
+    e.preventDefault();
+    // Exemplo: Histórico rápido ou deletar (cuidado ao deletar!)
+    const action = confirm(`Deseja ver o histórico detalhado do item ${node.id}?`);
+    if (action) showItemHistory(node.id);
   };
 
-  container.appendChild(div);
+  container.appendChild(row);
 
-  node.children.forEach(child => {
-    renderNode(child, container, level + 1);
-  });
+  // 9. Recursividade para os Filhos
+  if (node.children && node.children.length > 0) {
+    node.children.forEach(child => {
+      renderNode(child, container, level + 1);
+    });
+  }
 }
 
-// CRIAR FILHO
+// ==========================
+// CRIAR FILHO (CORRIGIDO)
+// ==========================
 function createChild(parent) {
   const data = window.OPM_DATA;
 
   const newItem = {
     id: generateHierarchicalId(parent.id, data),
     parentId: parent.id,
-    level: parent.level + 1,
+    level: parseInt(parent.level) + 1,
     title: "Nova Subtask",
-    description: "",
+    description: "Descreva a tarefa aqui...",
     status: "idea",
     type: "feature",
-    tags: parent.tags || "",
+    tags: "", // Deixamos vazio para herdar do pai ou definir novas
+    manifest_server_source: "",
+    manifest_server_lua: "",
+    manifest_client_source: "",
+    manifest_client_lua: ""
   };
 
   saveItem(newItem);
 }
-
 // ==========================
 // RENDER LOG VIEW
 // ==========================

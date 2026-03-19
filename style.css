@@ -1,85 +1,127 @@
+:root {
+  --bg-main: #0d1117;
+  --bg-card: #161b22;
+  --bg-input: #010409;
+  --border: #30363d;
+  --accent: #238636; /* Verde Esmeralda */
+  --accent-hover: #2ea043;
+  --text-main: #c9d1d9;
+  --text-dim: #8b949e;
+  --shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #121212;
-  color: #fff;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  overflow-x: hidden;
 }
 
-/* Central box */
+/* Scrollbar Customizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Login */
 .center-box {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: fixed;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: #1e1e1e;
-  padding: 30px;
-  border-radius: 10px;
-  text-align: center;
+  background: var(--bg-card);
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  width: 320px;
 }
 
-/* Inputs */
-select, button {
-  margin-top: 10px;
+/* Layout Principal */
+header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+#tabs {
+  display: flex;
+  gap: 5px;
+  padding: 15px 20px;
+  background: var(--bg-main);
+}
+
+#tabs button {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  width: auto;
+  transition: 0.2s;
+}
+
+#tabs button:hover { color: #fff; }
+#tabs button.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Tree & Cards */
+.node-row {
+  display: flex;
+  align-items: center;
   padding: 10px;
-  width: 200px;
-  border: none;
-  border-radius: 5px;
-}
-
-button {
-  background: #4CAF50;
-  color: white;
+  margin: 4px 0;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid transparent;
+  transition: 0.2s;
   cursor: pointer;
 }
 
-button:hover {
-  background: #45a049;
+.node-row:hover {
+  border-color: var(--border);
+  background: rgba(255,255,255,0.05);
 }
 
-/* Hidden */
-.hidden {
-  display: none;
-}
+.level-1 { border-left: 4px solid var(--accent); background: var(--bg-card); font-weight: bold; }
+.level-2 { border-left: 4px solid #3178c6; } /* Milestone */
+.level-3 { border-left: 4px solid #e3b341; } /* Task */
+.level-4 { border-left: 4px solid #f85149; } /* Issue */
 
-/* Header */
-header {
-  background: #1e1e1e;
-  padding: 10px;
-}
-
+/* Editor Panel */
 .editor {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 300px;
-  height: 100%;
-  background: #1e1e1e;
+  width: 450px;
+  background: var(--bg-card);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  border-left: 1px solid var(--border);
+  padding: 25px;
+}
+
+.editor label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+.manifest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Kanban */
+.kanban-board { display: flex; gap: 20px; padding: 20px; overflow-x: auto; }
+.kanban-col {
+  min-width: 280px;
+  background: #0d1117;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   padding: 15px;
-  overflow-y: auto;
-  border-left: 2px solid #333;
 }
 
-.editor input,
-.editor textarea,
-.editor select {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 6px;
-  background: #2a2a2a;
-  color: white;
-  border: none;
-}
-
-.editor button {
-  width: 100%;
-  margin-top: 5px;
-}
-
-
-h3 {
-  text-align: center;
-}
-
-div[draggable="true"]:hover {
-  background: #3a3a3a;
-}
+/* Status */
+.status-done { color: #2ecc71; font-weight: bold; }
+.status-doing { color: #f1c40f; }
+.status-to-do { color: #3498db; }
+.type-bug { background: #e74c3c; padding: 2px 5px; border-radius: 3px; font-size: 10px; }
