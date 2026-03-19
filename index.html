@@ -27,23 +27,22 @@
     </header>
 
     <main>
+        <div id="tabs">
+            <button onclick="setView('tree')">Full</button>
+            <button onclick="setView('impact')">Impact</button>
+            <button onclick="setView('clean')">Clean</button>
+            <button onclick="setView('kanban')">Kanban</button>
+            <button onclick="setView('log')">Log</button>
+        </div>
 
-      <div id="tabs">
-        <button onclick="setView('tree')">Full</button>
-        <button onclick="setView('impact')">Impact</button>
-        <button onclick="setView('clean')">Clean</button>
-        <button onclick="setView('kanban')">Kanban</button>
-        <button onclick="setView('log')">Log</button>
-      </div>
+        <div id="topActions">
+            <button onclick="toggleFocus()">Focus Mode</button>
+            <button onclick="createRootTask()">+ Nova Chave</button>
+            <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)"> 
+            <input id="kanbanFilter" class="hidden" placeholder="Filtrar por tag..." oninput="setKanbanFilter(this.value)">
+        </div>
 
-      <div id="topActions">
-        <button onclick="toggleFocus()">Focus Mode</button>
-        <button onclick="createTestItem()">Criar Task Teste</button>
-        <button onclick="createRootTask()">+ Nova Chave</button>
-        <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)"> 
-        <input placeholder="Filtrar por tag..." oninput="setKanbanFilter(this.value)">
-      </div>
-
+        <div id="viewContainer"></div>
     </main>
 
     <div id="editorPanel" class="editor hidden">
@@ -75,26 +74,27 @@
     <input id="editTags">
 
     <hr>
-
     <h3>Asset Manifest</h3>
-
-    <label>Server Source</label>
-    <textarea id="editServerSource"></textarea>
-
-    <label>Server Lua</label>
-    <textarea id="editServerLua"></textarea>
-
-    <label>Client Source</label>
-    <textarea id="editClientSource"></textarea>
-
-    <label>Client Lua</label>
-    <textarea id="editClientLua"></textarea>
-
-    <button onclick="saveEditor()">Salvar</button>
-    <button onclick="closeEditor()">Cancelar</button>
+    <div class="manifest-grid">
+        <div>
+            <label>Server Source</label>
+            <textarea id="editServerSource"></textarea>
+        </div>
+        <div>
+            <label>Server Lua</label>
+            <textarea id="editServerLua"></textarea>
+        </div>
+        <div>
+            <label>Client Source</label>
+            <textarea id="editClientSource"></textarea>
+        </div>
+        <div>
+            <label>Client Lua</label>
+            <textarea id="editClientLua"></textarea>
+        </div>
+        <button onclick="saveEditor()">Salvar</button>
+        <button onclick="closeEditor()">Cancelar</button>
     </div>
-
-  </div>
 
   <script src="app.js"></script>
 </body>

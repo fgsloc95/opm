@@ -48,19 +48,13 @@ loginBtn.addEventListener("click", () => {
 // START APP
 // ==========================
 function startApp(user) {
-  loginScreen.classList.add("hidden");
+  loginScreen.classList.add("hidden"); // Isso agora vai esconder o login
   app.classList.remove("hidden");
-
   activeUserText.innerText = "Usuário: " + user;
-
-  console.log("[OPM] iniciado com usuário:", user);
-
+  
   loadData();
   loadLog();
-
-  if (!polling) {
-    polling = setInterval(loadData, 3000);
-  }
+  if (!polling) polling = setInterval(loadData, 3000);
 }
 
 // ==========================
