@@ -330,76 +330,87 @@ function filterByTag(tag) {
 // ==========================
 // RENDER IMPACT VIEW
 // ==========================
-
 function renderImpactView() {
-  const main = document.querySelector("main");
-  main.innerHTML = "<h1>Impact View</h1>";
+  const container = document.getElementById("viewContainer");
+  container.innerHTML = "<h1>Impact View (By Tags)</h1>";
 
   const tagMap = {};
 
   window.OPM_DATA.forEach(item => {
     const tags = getInheritedTags(item, window.OPM_MAP);
-
     tags.forEach(tag => {
       if (!tagMap[tag]) tagMap[tag] = [];
       tagMap[tag].push(item);
     });
   });
 
-  Object.keys(tagMap).forEach(tag => {
+  const wrapper = document.createElement("div");
+  wrapper.className = "impact-container"; // Estilize no CSS se quiser colunas
+
+  Object.keys(tagMap).sort().forEach(tag => {
     const section = document.createElement("div");
-    section.innerHTML = `<h2>${tag.toUpperCase()}</h2>`;
+    section.style.marginBottom = "20px";
+    section.innerHTML = `<h2 style="color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:5px;">${tag.toUpperCase()}</h2>`;
 
     tagMap[tag].forEach(item => {
       const div = document.createElement("div");
-      div.innerText = `${item.id} - ${item.title}`;
+      div.className = "node-row"; // Reutiliza o estilo de hover e card
       div.style.marginLeft = "10px";
-
+      div.innerHTML = `<strong>${item.id}</strong> - ${item.title} <small>(${item.status})</small>`;
+      div.onclick = () => openEditor(item);
       section.appendChild(div);
     });
 
-    main.appendChild(section);
+    wrapper.appendChild(section);
   });
+
+  container.appendChild(wrapper);
 }
 
 // ==========================
 // RENDER CLEAN VIEW
 // ==========================
 function renderCleanView(data) {
-  const main = document.querySelector("main");
-  main.innerHTML = "<h1>Clean View</h1>";
+  const container = document.getElementById("viewContainer");
+  container.innerHTML = "<h1>Clean View</h1>";
 
   const tree = buildTree(data);
+  const wrapper = document.createElement("div");
+  wrapper.style.padding = "20px";
 
   function render(node, level) {
     const div = document.createElement("div");
-    div.style.marginLeft = level * 20 + "px";
-
-    div.innerText = `${node.id} - ${node.title}`;
-    main.appendChild(div);
+    div.style.marginLeft = level * 25 + "px";
+    div.style.marginBottom = "8px";
+    div.style.fontSize = "14px";
+    div.style.color = level === 0 ? "var(--accent)" : "var(--text-main)";
+    
+    div.innerHTML = `<code>${node.id}</code> — ${node.title}`;
+    wrapper.appendChild(div);
 
     node.children.forEach(child => render(child, level + 1));
   }
 
   tree.forEach(root => render(root, 0));
+  container.appendChild(wrapper);
 }
 
 // ==========================
 // RENDER TREE
 // ==========================
 function renderTree(data) {
-  const main = document.querySelector("main");
-  main.innerHTML = `<h1 class="view-title">OPM Tree View</h1>`;
+  const container = document.getElementById("viewContainer"); // Mudamos de main para viewContainer
+  container.innerHTML = `<h1 class="view-title">Tree View</h1>`;
 
   const tree = buildTree(data);
-  const container = document.createElement("div");
-  container.className = "tree-container";
+  const treeWrapper = document.createElement("div");
+  treeWrapper.className = "tree-container";
 
   tree.forEach(node => {
-    renderNode(node, container, 0);
+    renderNode(node, treeWrapper, 0);
   });
 
-  main.appendChild(container);
+  container.appendChild(treeWrapper);
 }
 
 // ==========================
@@ -435,10 +446,10 @@ function renderNode(node, container, level) {
       <div class="node-info">
         <span class="node-id">${node.id}</span>
         <span class="node-title">${node.title}</span>
+        <span class="status-badge status-${node.status.replace(/\s+/g, '-')}">${node.status}</span>
       </div>
       <div class="node-meta">
         ${tagsHtml}
-        <span class="status-badge status-${node.status.replace(/\s+/g, '-')}">${node.status}</span>
         <span class="type-badge type-${node.type}">${node.type}</span>
       </div>
     </div>
@@ -501,31 +512,42 @@ function createChild(parent) {
 
   saveItem(newItem);
 }
+
 // ==========================
 // RENDER LOG VIEW
 // ==========================
-
 function renderLogView() {
-  const main = document.querySelector("main");
-  main.innerHTML = "<h1>Log</h1>";
+  const container = document.getElementById("viewContainer");
+  container.innerHTML = "<h1>System Logs</h1>";
 
   const logs = window.OPM_LOG || [];
+  const wrapper = document.createElement("div");
+  wrapper.style.padding = "10px";
 
-  logs.reverse().forEach(log => {
+  // Criamos uma cópia para não mutar o array original com o reverse
+  [...logs].reverse().forEach(log => {
     const div = document.createElement("div");
+    div.className = "node-row"; // Aproveita o fundo escuro e bordas
+    div.style.fontSize = "12px";
+    div.style.cursor = "default";
 
     const date = new Date(parseInt(log.timestamp)).toLocaleString();
+    
+    div.innerHTML = `
+      <span style="color:var(--text-dim)">[${date}]</span> 
+      <strong style="color:var(--accent)">${log.user}</strong> 
+      <span style="color:#3178c6">${log.action}</span> 
+      on <small>${log.itemId}</small> 
+      <div style="margin-top:5px; color:var(--text-dim)">
+        ${log.field}: <span style="color:#f85149">${log.oldValue || 'empty'}</span> → <span style="color:#2ecc71">${log.newValue}</span>
+      </div>
+    `;
 
-    div.innerText =
-      `[${date}] ${log.user} -> ${log.action} (${log.itemId}) | ${log.field}: ${log.oldValue} → ${log.newValue}`;
-
-    div.style.fontSize = "12px";
-    div.style.marginBottom = "4px";
-
-    main.appendChild(div);
+    wrapper.appendChild(div);
   });
-}
 
+  container.appendChild(wrapper);
+}
 
 // ==========================
 // RENDER DEEP SEARCH
@@ -591,21 +613,19 @@ function calculateProgress(node) {
 // ==========================
 
 function renderKanban() {
-  const main = document.querySelector("main");
-  main.innerHTML = "<h1>Kanban</h1>";
+  const container = document.getElementById("viewContainer");
+  container.innerHTML = "<h1>Kanban</h1>";
 
   const board = document.createElement("div");
-  board.style.display = "flex";
-  board.style.gap = "10px";
+  board.className = "kanban-board"; // Use a classe que criamos no CSS
 
   const statuses = ["idea", "to do", "doing", "done"];
-
   statuses.forEach(status => {
     const column = createColumn(status);
     board.appendChild(column);
   });
 
-  main.appendChild(board);
+  container.appendChild(board);
 }
 
 // CRIAR COLUNA

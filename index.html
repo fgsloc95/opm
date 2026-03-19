@@ -9,12 +9,12 @@
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="center-box">
-    <h2>OTG Project Master</h2>
+    <h2>OT Project Manager</h2>
 
     <select id="userSelect">
       <option value="">Selecione um usuário</option>
-      <option value="Felipe">Felipe</option>
-      <option value="Dev2">Dev2</option>
+      <option value="Felipe">Doleta</option>
+      <option value="Dev2">Frost</option>
     </select>
 
     <button id="loginBtn">Accept</button>
@@ -28,21 +28,21 @@
 
     <main>
         <div id="tabs">
-            <button onclick="setView('tree')">Full</button>
-            <button onclick="setView('impact')">Impact</button>
-            <button onclick="setView('clean')">Clean</button>
-            <button onclick="setView('kanban')">Kanban</button>
-            <button onclick="setView('log')">Log</button>
+            <button onclick="setView('tree')">Full View</button>
+            <button onclick="setView('impact')">Impact View</button>
+            <button onclick="setView('clean')">Clean View</button>
+            <button onclick="setView('kanban')">Cards View</button>
+            <button onclick="setView('log')">Changes BackLog</button>
         </div>
 
         <div id="topActions">
-            <button onclick="toggleFocus()">Focus Mode</button>
-            <button onclick="createRootTask()">+ Nova Chave</button>
+            <button onclick="toggleFocus()">Hide Completed Tasks</button>
+            <button onclick="createRootTask()">+ Nova Task Chave</button>
             <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)"> 
-            <input id="kanbanFilter" class="hidden" placeholder="Filtrar por tag..." oninput="setKanbanFilter(this.value)">
+            <input placeholder="Filtrar por tag..." oninput="setKanbanFilter(this.value)">
         </div>
 
-        <div id="viewContainer"></div>
+      <div id="viewContainer"></div> 
     </main>
 
     <div id="editorPanel" class="editor hidden">
@@ -50,9 +50,6 @@
 
     <label>Título</label>
     <input id="editTitle">
-
-    <label>Descrição</label>
-    <textarea id="editDescription"></textarea>
 
     <label>Status</label>
     <select id="editStatus">
@@ -69,6 +66,9 @@
         <option value="refactor">Refactor</option>
         <option value="research">Research</option>
     </select>
+
+    <label>Descrição</label>
+    <textarea id="editDescription"></textarea>
 
     <label>Tags</label>
     <input id="editTags">
